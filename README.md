@@ -38,7 +38,7 @@ não enxerga o Discord.
 npm install
 npm start                 # abre o jogo de produção
 npm run start:local       # abre o dev server (http://localhost:5173)
-npm run dist              # dist/Kagebana-Setup.exe e a versão portable
+npm run dist              # dist/Kagebana-Setup.exe
 ```
 
 O instalador sai do GitHub Actions (`.github/workflows/release.yml`) a cada tag `v*`: no Linux o NSIS pede `wine`. `npm run dist` funciona no Windows; o `.exe`
@@ -46,6 +46,16 @@ sai sem assinatura, então o Windows mostra o aviso azul na primeira vez:
 **Mais informações → Executar assim mesmo**.
 
 `KAGEBANA_URL` e `KAGEBANA_DISCORD_CLIENT_ID` passam por cima do `config.js`.
+
+## Atualização automática
+
+Desde a v0.3.0 o app instalado confere os Releases ao abrir (e de 6 em 6 h),
+baixa a versão nova em segundo plano e pergunta se pode reiniciar; senão,
+instala ao fechar (`src/update.js`). Publicar é só a tag: o workflow sobe o
+`Kagebana-Setup.exe`, o `.blockmap` e o `latest.yml`, que é o que o app
+consulta. Sem o `latest.yml` no release, ninguém recebe a versão.
+
+A versão portátil saiu: ela não sabe atualizar-se.
 
 ## Limites conhecidos
 

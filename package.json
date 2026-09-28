@@ -1,7 +1,7 @@
 {
   "name": "kagebana-desktop",
   "productName": "Kagebana",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Kagebana para desktop, com status no Discord.",
   "private": true,
   "main": "src/main.js",
@@ -33,8 +33,7 @@
     "win": {
       "icon": "build/icon.png",
       "target": [
-        "nsis",
-        "portable"
+        "nsis"
       ]
     },
     "nsis": {
@@ -42,15 +41,20 @@
       "shortcutName": "Kagebana",
       "artifactName": "Kagebana-Setup.${ext}"
     },
-    "portable": {
-      "artifactName": "Kagebana-portable.${ext}"
-    }
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "marcelovtn",
+        "repo": "kagebana-desktop"
+      }
+    ]
   },
   "devDependencies": {
     "electron": "^44.4.5",
     "electron-builder": "^26.15.3"
   },
   "dependencies": {
-    "@xhayper/discord-rpc": "^1.5.1"
+    "@xhayper/discord-rpc": "^1.5.1",
+    "electron-updater": "^6.8.9"
   }
 }

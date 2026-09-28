@@ -9,6 +9,7 @@ const path = require('node:path')
 const { app, BrowserWindow, ipcMain, shell } = require('electron')
 const { discordClientId, gameUrl, PROD_URL, DISCORD_INVITE } = require('./config')
 const { createPresence, cleanPresence } = require('./discord')
+const { watchUpdates } = require('./update')
 
 const GAME_URL = gameUrl(process.argv)
 const GAME_ORIGIN = new URL(GAME_URL).origin
@@ -159,6 +160,7 @@ app.whenReady().then(() => {
     console.warn('[kagebana] sem DISCORD_CLIENT_ID em src/config.js: o jogo abre, mas sem status no Discord')
   }
   createWindow()
+  watchUpdates(() => win)
 })
 
 app.on('window-all-closed', async () => {

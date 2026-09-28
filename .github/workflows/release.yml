@@ -1,5 +1,7 @@
 # Gera o instalador numa máquina Windows e publica no Release da tag.
 # No Linux o NSIS precisa de wine; aqui não. Versão nova = `git tag vX.Y.Z && git push --tags`.
+# O `latest.yml` é o que o app instalado consulta para se atualizar (src/update.js):
+# sem ele no release, ninguém recebe a versão nova.
 name: release
 
 on:
@@ -26,6 +28,6 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release create "$GITHUB_REF_NAME" \
-            dist/Kagebana-Setup.exe dist/Kagebana-portable.exe \
+            dist/Kagebana-Setup.exe dist/Kagebana-Setup.exe.blockmap dist/latest.yml \
             --title "Kagebana $GITHUB_REF_NAME" \
             --notes "Baixe o **Kagebana-Setup.exe** e abra. O Windows vai avisar que protegeu o computador: clique em **Mais informações → Executar assim mesmo**. O aviso aparece porque o app não tem assinatura digital paga."
