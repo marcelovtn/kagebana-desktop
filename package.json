@@ -1,7 +1,7 @@
 {
   "name": "kagebana-desktop",
   "productName": "Kagebana",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Kagebana para desktop, com status no Discord.",
   "private": true,
   "main": "src/main.js",
@@ -14,6 +14,14 @@
   "build": {
     "appId": "com.kagebana.desktop",
     "productName": "Kagebana",
+    "protocols": [
+      {
+        "name": "Kagebana",
+        "schemes": [
+          "kagebana"
+        ]
+      }
+    ],
     "files": [
       "src/**/*",
       "build/icon.png",

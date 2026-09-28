@@ -8,4 +8,12 @@ const { contextBridge, ipcRenderer } = require('electron')
 
 contextBridge.exposeInMainWorld('kagebanaDesktop', {
   setPresence: (presence) => ipcRenderer.send('presence:set', presence),
+  /* v0.2.0 — o login do Google no navegador; ver `login` em main.js. */
+  signInWithGoogle: () => ipcRenderer.send('login:google'),
+  /* Quem escuta avisa que está pronto: o jogo só se inscreve depois do
+     arranque, e um código mandado antes disso perdia-se. */
+  onLogin: (listener) => {
+    ipcRenderer.on('login:token', (_event, token) => listener(token))
+    ipcRenderer.send('login:ready')
+  },
 })

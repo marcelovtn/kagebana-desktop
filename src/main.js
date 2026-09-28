@@ -16,10 +16,46 @@ const GAME_ORIGIN = new URL(GAME_URL).origin
 const API_ORIGIN = GAME_ORIGIN === new URL(PROD_URL).origin ? 'https://api.kagebana.com' : 'http://localhost:3002'
 const INSIDE = new Set([GAME_ORIGIN, API_ORIGIN])
 
+/*
+ * **O login do Google volta por `kagebana://login?token=…`.**
+ *
+ * O Google recusa entrar dentro de uma janela de app, portanto o botão abre o
+ * navegador em `/?desktop=google`; lá a pessoa entra, e o site devolve um
+ * código de uso único (3 min, uma vez) por este protocolo. O Windows entrega o
+ * link ao app — ao que já está aberto pelo `second-instance`, ou a um novo
+ * pelo `argv` — e o jogo troca o código pela sessão.
+ */
+const PROTOCOL = 'kagebana'
+/* Com `npm start` o executável é o electron e o app é um argumento; empacotado,
+   o executável já é o app. */
+if (process.defaultApp) app.setAsDefaultProtocolClient(PROTOCOL, process.execPath, [path.resolve(process.argv[1])])
+else app.setAsDefaultProtocolClient(PROTOCOL)
+
 if (!app.requestSingleInstanceLock()) app.quit()
 
 let win = null
 let presence = null
+/* Um código que chegou antes de o jogo estar a escutar (`login:ready`). */
+let pendingToken = tokenIn(process.argv)
+let listening = false
+
+function tokenIn(argv) {
+  const link = argv.find((arg) => arg.startsWith(`${PROTOCOL}://`))
+  if (!link) return null
+  try {
+    const url = new URL(link)
+    const token = url.searchParams.get('token')
+    return url.hostname === 'login' && token && /^[A-Za-z0-9_-]{16,256}$/.test(token) ? token : null
+  } catch {
+    return null
+  }
+}
+
+function deliverToken() {
+  if (!pendingToken || !win || !listening) return
+  win.webContents.send('login:token', pendingToken)
+  pendingToken = null
+}
 
 function isInside(url) {
   try {
@@ -71,6 +107,10 @@ function createWindow() {
     }
   })
 
+  /* Uma página nova (o reload depois do login, inclusive) ainda não escuta. */
+  win.webContents.on('did-start-loading', () => {
+    listening = false
+  })
   win.loadURL(GAME_URL)
 }
 
@@ -81,10 +121,26 @@ ipcMain.on('presence:set', (event, raw) => {
   if (clean) presence.set(clean)
 })
 
-app.on('second-instance', () => {
+ipcMain.on('login:ready', (event) => {
+  if (!isInside(event.senderFrame?.url ?? '')) return
+  listening = true
+  deliverToken()
+})
+
+ipcMain.on('login:google', (event) => {
+  if (!isInside(event.senderFrame?.url ?? '')) return
+  shell.openExternal(`${GAME_URL}/?desktop=google`)
+})
+
+app.on('second-instance', (_event, argv) => {
   if (!win) return
   if (win.isMinimized()) win.restore()
   win.focus()
+  const token = tokenIn(argv)
+  if (token) {
+    pendingToken = token
+    deliverToken()
+  }
 })
 
 app.whenReady().then(() => {
