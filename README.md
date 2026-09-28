@@ -41,7 +41,7 @@ npm run start:local       # abre o dev server (http://localhost:5173)
 npm run dist              # dist/Kagebana-Setup.exe e a versão portable
 ```
 
-`npm run dist` também funciona de dentro do WSL (testado com `--dir`); o `.exe`
+O instalador sai do GitHub Actions (`.github/workflows/release.yml`) a cada tag `v*`: no Linux o NSIS pede `wine`. `npm run dist` funciona no Windows; o `.exe`
 sai sem assinatura, então o Windows mostra o aviso azul na primeira vez:
 **Mais informações → Executar assim mesmo**.
 

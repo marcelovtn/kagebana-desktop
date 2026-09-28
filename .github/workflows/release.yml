@@ -1,0 +1,31 @@
+# Gera o instalador numa máquina Windows e publica no Release da tag.
+# No Linux o NSIS precisa de wine; aqui não. Versão nova = `git tag vX.Y.Z && git push --tags`.
+name: release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx electron-builder --win --publish never
+      - name: Publicar no Release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            dist/Kagebana-Setup.exe dist/Kagebana-portable.exe \
+            --title "Kagebana $GITHUB_REF_NAME" \
+            --notes "Baixe o **Kagebana-Setup.exe** e abra. O Windows vai avisar que protegeu o computador: clique em **Mais informações → Executar assim mesmo**. O aviso aparece porque o app não tem assinatura digital paga."
