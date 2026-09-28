@@ -1,0 +1,48 @@
+{
+  "name": "kagebana-desktop",
+  "productName": "Kagebana",
+  "version": "0.1.0",
+  "description": "Kagebana para desktop, com status no Discord.",
+  "private": true,
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron .",
+    "start:local": "electron . --local",
+    "dist": "electron-builder --win",
+    "dist:dir": "electron-builder --win --dir"
+  },
+  "build": {
+    "appId": "com.kagebana.desktop",
+    "productName": "Kagebana",
+    "files": [
+      "src/**/*",
+      "build/icon.png",
+      "package.json"
+    ],
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "icon": "build/icon.png",
+      "target": [
+        "nsis",
+        "portable"
+      ]
+    },
+    "nsis": {
+      "oneClick": true,
+      "shortcutName": "Kagebana",
+      "artifactName": "Kagebana-Setup.${ext}"
+    },
+    "portable": {
+      "artifactName": "Kagebana-portable.${ext}"
+    }
+  },
+  "devDependencies": {
+    "electron": "^44.4.5",
+    "electron-builder": "^26.15.3"
+  },
+  "dependencies": {
+    "@xhayper/discord-rpc": "^1.5.1"
+  }
+}
