@@ -59,8 +59,8 @@ A versão portátil saiu: ela não sabe atualizar-se.
 
 ## Limites conhecidos
 
-- Login com Google provavelmente não passa: o Google bloqueia login dentro de
-  janelas embutidas. Email e senha funcionam.
+- Login com Google é no navegador (o Google bloqueia login dentro de janelas
+  de app) e volta ao app por `kagebana://login`; ver `src/main.js`.
 - O status só aparece depois do deploy do jogo com `src/ui/presence.ts`. Antes
   disso fica "Samurai contra samurai" e o tempo de jogo.
 - Só Windows por enquanto (Mac pediria assinatura da Apple).
