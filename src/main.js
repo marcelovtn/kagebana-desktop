@@ -5,6 +5,7 @@
  * chega sozinho, o login é o mesmo do navegador e o instalador só muda quando
  * esta casca muda. `--local` (ou `KAGEBANA_URL`) aponta para o dev server.
  */
+const fs = require('node:fs')
 const path = require('node:path')
 const { app, BrowserWindow, ipcMain, shell } = require('electron')
 const { discordClientId, gameUrl, PROD_URL, DISCORD_INVITE } = require('./config')
@@ -70,8 +71,42 @@ function openOutside(url) {
   if (/^https?:\/\//.test(url)) shell.openExternal(url)
 }
 
+/*
+ * **A tela cheia volta como ficou.** Um jogo de deixar aberto: quem o pôs em
+ * tela cheia uma vez quer abri-lo assim. Guardada só a tela cheia, não o
+ * tamanho nem a posição — um monitor desligado levaria a janela para fora da
+ * tela.
+ */
+const WINDOW_FILE = () => path.join(app.getPath('userData'), 'window.json')
+
+function rememberedFullScreen() {
+  try {
+    return JSON.parse(fs.readFileSync(WINDOW_FILE(), 'utf8')).fullScreen === true
+  } catch {
+    return false
+  }
+}
+
+function rememberFullScreen(fullScreen) {
+  try {
+    fs.writeFileSync(WINDOW_FILE(), JSON.stringify({ fullScreen }))
+  } catch (problem) {
+    console.warn('[kagebana] a tela cheia não ficou guardada', problem)
+  }
+}
+
+/* O F11, o botão do jogo e a API do navegador (um jogo antigo) mexem todos na
+   mesma janela; a página fica sabendo por aqui, seja quem for que mexeu. */
+function tellFullScreen() {
+  if (!win) return
+  const on = win.isFullScreen()
+  rememberFullScreen(on)
+  win.webContents.send('fullscreen:changed', on)
+}
+
 function createWindow() {
   win = new BrowserWindow({
+    fullscreen: rememberedFullScreen(),
     width: 1280,
     height: 800,
     minWidth: 960,
@@ -100,13 +135,17 @@ function createWindow() {
     openOutside(url)
   })
 
-  /* F11 é tela cheia; sem menu, não há outro jeito de a pedir. */
+  /* F11 é tela cheia. Desde a v0.4.0 o jogo também tem um botão para ela. */
   win.webContents.on('before-input-event', (event, input) => {
     if (input.type === 'keyDown' && input.key === 'F11') {
       win.setFullScreen(!win.isFullScreen())
       event.preventDefault()
     }
   })
+
+  for (const event of ['enter-full-screen', 'leave-full-screen', 'enter-html-full-screen', 'leave-html-full-screen']) {
+    win.on(event, tellFullScreen)
+  }
 
   /* Uma página nova (o reload depois do login, inclusive) ainda não escuta. */
   win.webContents.on('did-start-loading', () => {
@@ -131,6 +170,17 @@ ipcMain.on('login:ready', (event) => {
 ipcMain.on('login:google', (event) => {
   if (!isInside(event.senderFrame?.url ?? '')) return
   shell.openExternal(`${GAME_URL}/?desktop=google`)
+})
+
+ipcMain.on('fullscreen:set', (event, on) => {
+  if (!win || !isInside(event.senderFrame?.url ?? '')) return
+  win.setFullScreen(on === true)
+})
+
+/* A página inscreveu-se: recebe já o estado, que pode ter vindo guardado. */
+ipcMain.on('fullscreen:ready', (event) => {
+  if (!win || !isInside(event.senderFrame?.url ?? '')) return
+  win.webContents.send('fullscreen:changed', win.isFullScreen())
 })
 
 app.on('second-instance', (_event, argv) => {

@@ -16,4 +16,10 @@ contextBridge.exposeInMainWorld('kagebanaDesktop', {
     ipcRenderer.on('login:token', (_event, token) => listener(token))
     ipcRenderer.send('login:ready')
   },
+  /* v0.4.0 — a tela cheia da janela, a mesma do F11; ver `tellFullScreen`. */
+  setFullScreen: (on) => ipcRenderer.send('fullscreen:set', on === true),
+  onFullScreen: (listener) => {
+    ipcRenderer.on('fullscreen:changed', (_event, on) => listener(on === true))
+    ipcRenderer.send('fullscreen:ready')
+  },
 })

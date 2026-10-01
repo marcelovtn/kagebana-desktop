@@ -57,6 +57,12 @@ consulta. Sem o `latest.yml` no release, ninguém recebe a versão.
 
 A versão portátil saiu: ela não sabe atualizar-se.
 
+## Tela cheia
+
+F11 ou o botão de cantos no HUD do jogo — os dois mexem na mesma janela, e o
+jogo fica sabendo pelo `fullscreen:changed` (v0.4.0). O app abre como foi
+fechado, em tela cheia ou não (`window.json` no `userData`).
+
 ## Limites conhecidos
 
 - Login com Google é no navegador (o Google bloqueia login dentro de janelas
